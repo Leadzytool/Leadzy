@@ -68,6 +68,13 @@ CREATE POLICY "rewards_public_read" ON public.rewards
 CREATE POLICY "leads_public_update" ON public.leads
   FOR UPDATE USING (true) WITH CHECK (true);
 
+-- Grant permissions to anon and authenticated roles
+GRANT SELECT ON public.restaurants TO anon, authenticated;
+GRANT SELECT ON public.rewards TO anon, authenticated;
+GRANT INSERT ON public.leads TO anon, authenticated;
+GRANT UPDATE ON public.leads TO anon, authenticated;
+GRANT SELECT ON public.leads TO authenticated;
+
 -- Storage bucket for logos
 INSERT INTO storage.buckets (id, name, public) VALUES ('logos', 'logos', true)
 ON CONFLICT (id) DO NOTHING;
