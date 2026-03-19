@@ -73,6 +73,7 @@ export default function ClientFormPage({ params }: { params: Promise<{ slug: str
       sessionStorage.setItem("leadzy_restaurant_id", restaurant.id);
       router.push(`/r/${slug}/wheel`);
     } else {
+      setErrors({ email: "Une erreur est survenue. Veuillez réessayer." });
       setLoading(false);
     }
   }

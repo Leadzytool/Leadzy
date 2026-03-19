@@ -64,6 +64,10 @@ CREATE POLICY "rewards_owner" ON public.rewards
 CREATE POLICY "rewards_public_read" ON public.rewards
   FOR SELECT USING (true);
 
+-- Leads: allow anonymous update of reward field (after wheel spin)
+CREATE POLICY "leads_public_update" ON public.leads
+  FOR UPDATE USING (true) WITH CHECK (true);
+
 -- Storage bucket for logos
 INSERT INTO storage.buckets (id, name, public) VALUES ('logos', 'logos', true)
 ON CONFLICT (id) DO NOTHING;
