@@ -54,34 +54,25 @@ export default function ClientFormPage({ params }: { params: Promise<{ slug: str
     if (!validate() || !restaurant) return;
     setLoading(true);
 
-    if (isDemo) {
-      sessionStorage.setItem("leadzy_lead_id", "demo-lead");
-      sessionStorage.setItem("leadzy_restaurant_id", restaurant.id);
-      router.push(`/r/${slug}/wheel`);
-      return;
+    // Redirect to wheel immediately — saving lead happens in background
+    sessionStorage.setItem("leadzy_lead_id", "pending-" + Date.now());
+    sessionStorage.setItem("leadzy_restaurant_id", restaurant.id);
+
+    // Save lead in background (non-blocking)
+    if (!isDemo) {
+      const supabase = createClient();
+      supabase
+        .from("leads")
+        .insert({ restaurant_id: restaurant.id, email, phone })
+        .select("id")
+        .single()
+        .then(({ data: lead, error }) => {
+          if (error) console.error("Lead insert error:", error);
+          if (lead) sessionStorage.setItem("leadzy_lead_id", lead.id);
+        });
     }
 
-    const supabase = createClient();
-    const { data: lead, error: leadError } = await supabase
-      .from("leads")
-      .insert({ restaurant_id: restaurant.id, email, phone })
-      .select("id")
-      .single();
-
-    if (leadError) {
-      console.error("Lead insert error:", leadError);
-    }
-
-    if (lead) {
-      sessionStorage.setItem("leadzy_lead_id", lead.id);
-      sessionStorage.setItem("leadzy_restaurant_id", restaurant.id);
-      router.push(`/r/${slug}/wheel`);
-    } else {
-      // Fallback: bypass lead save and go to wheel anyway
-      sessionStorage.setItem("leadzy_lead_id", "bypass-" + Date.now());
-      sessionStorage.setItem("leadzy_restaurant_id", restaurant.id);
-      router.push(`/r/${slug}/wheel`);
-    }
+    router.push(`/r/${slug}/wheel`);
   }
 
   if (pageLoading) {
